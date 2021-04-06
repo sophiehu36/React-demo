@@ -12,7 +12,7 @@ class Counter extends Component {
     // 绑定this的原始办法，在constructor中用bind方法
     // constructor() {
     //     super();
-    //     //this.handleIncrement.bind(this)返回一个新实例
+    //     this.handleIncrement.bind(this)返回一个新实例
     //     this.handleIncrement = this.handleIncrement.bind(this);
     // }
 
