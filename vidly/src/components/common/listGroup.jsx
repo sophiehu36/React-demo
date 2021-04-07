@@ -21,11 +21,10 @@ const ListGroup = (props) => {
                 All Genres
             </a> */}
             {items.map((item) => (
-                <a
-                    style={{ cursor: "pointer" }}
+                <button
                     onClick={() => onItemSelect(item)}
                     // 访问item的valueProperty项，变更props传入的值就可以复用组件
-                    key={`${item[valueProperty]}`}
+                    key={item[valueProperty]}
                     className={
                         //判断这个元素是不是选中的元素，选中的元素多一个active样式
                         item === selectedItem
@@ -35,7 +34,7 @@ const ListGroup = (props) => {
                 >
                     {/* 访问item的textProperty项，变更props传入的值就可以复用组件 */}
                     {item[textProperty]}
-                </a>
+                </button>
             ))}
         </div>
     );
