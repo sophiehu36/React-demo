@@ -1,16 +1,31 @@
 import React, { Component } from "react";
+import MovieTables from "./movieTables";
 import { getMovies } from "../services/fakeMovieService";
-//import { saveMovie } from "../services/fakeMovieService";
-//import { deleteMovie } from "../services/fakeMovieService";
-import Like from "./common/Like";
+import { getGenres } from "../services/fakeGenreService";
 import Pagination from "./common/pagination";
 import { paginate } from "../utils/paginate";
+import ListGroup from "./common/listGroup";
 
 class Movies extends Component {
     state = {
-        movies: getMovies(),
+        movies: [],
+        genres: [],
         pageSize: 4,
         currentPage: 1,
+        selectedGenre: {},
+    };
+
+    componentDidMount() {
+        //组件加载完毕时加载电影和类别列表
+        //手动添加genres列表第一项为：All Genres
+        const genres = [{ name: "All Genres" }, ...getGenres()];
+        this.setState({ movies: getMovies(), genres });
+    }
+
+    handleGenreSelect = (genre) => {
+        //为了避免切换选择genre时，页面没有切换过来
+        //切换genre的同时，把页面切换到第一页
+        this.setState({ selectedGenre: genre, currentPage: 1 });
     };
 
     handleDelete = (movie) => {
@@ -20,8 +35,8 @@ class Movies extends Component {
     };
 
     handleLike = (movie) => {
-        // console.log("click like");
-        // console.log(movie)
+        console.log("click like");
+        console.log(movie)
         const movies = [...this.state.movies];
         const index = movies.indexOf(movie);
         movies[index] = { ...movie };
@@ -36,60 +51,50 @@ class Movies extends Component {
 
     render() {
         const { length: count } = this.state.movies;
-        const { movies: allMovies, pageSize, currentPage } = this.state;
+        const {
+            movies: allMovies,
+            pageSize,
+            currentPage,
+            selectedGenre,
+            genres,
+        } = this.state;
+
         if (count === 0) return <h1>There are no movies in the database!</h1>;
-        const movies = paginate(allMovies, currentPage, pageSize);
+
+        const filtered =
+            //因为没有给all genres设置id属性，所以还要判断id是否同时为true
+            selectedGenre && selectedGenre._id
+                ? allMovies.filter((m) => m.genre._id === selectedGenre._id)
+                : allMovies;
+
+        const movies = paginate(filtered, currentPage, pageSize);
 
         return (
             //快速创建：zen coding
             //table.table>thead>tr>th*4
-            <>
-                <h1>Showing {count} movies in the database.</h1>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Genre</th>
-                            <th>Stock</th>
-                            <th>Rate</th>
-                            <th />
-                            <th />
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {movies.map((movie) => (
-                            <tr key={movie._id}>
-                                <td>{movie.title}</td>
-                                <td>{movie.genre.name}</td>
-                                <td>{movie.numberInStock}</td>
-                                <td>{movie.dailyRentalRate}</td>
-                                <td>
-                                    <Like
-                                        liked={movie.liked}
-                                        onLikeClick={() =>
-                                            this.handleLike(movie)
-                                        }
-                                    />
-                                </td>
-                                <td>
-                                    <button
-                                        onClick={() => this.handleDelete(movie)}
-                                        className="btn btn-danger btn-sm"
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                <Pagination
-                    itemCount={count}
-                    pageSize={pageSize}
-                    currentPage={currentPage}
-                    onPageChange={this.handlePageChange}
-                />
-            </>
+            <div className="row">
+                <div className="col-2">
+                    <ListGroup
+                        items={genres}
+                        onItemSelect={this.handleGenreSelect}
+                        selectedItem={selectedGenre}
+                    />
+                </div>
+                <div className="col">
+                    <p>Showing {filtered.length} movies in the database.</p>
+                    <MovieTables
+                        movies={movies}
+                        onLike={this.handleLike}
+                        onDelete={this.handleDelete}
+                    />
+                    <Pagination
+                        itemCount={filtered.length}
+                        pageSize={pageSize}
+                        currentPage={currentPage}
+                        onPageChange={this.handlePageChange}
+                    />
+                </div>
+            </div>
         );
     }
 }
