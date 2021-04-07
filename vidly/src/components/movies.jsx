@@ -1,10 +1,11 @@
 import React, { Component } from "react";
 import MovieTables from "./movieTables";
+import Pagination from "./common/pagination";
+import ListGroup from "./common/listGroup";
 import { getMovies } from "../services/fakeMovieService";
 import { getGenres } from "../services/fakeGenreService";
-import Pagination from "./common/pagination";
 import { paginate } from "../utils/paginate";
-import ListGroup from "./common/listGroup";
+import _ from "lodash";
 
 class Movies extends Component {
     state = {
@@ -12,13 +13,14 @@ class Movies extends Component {
         genres: [],
         pageSize: 4,
         currentPage: 1,
+        sortColumn: { path: "title", order: "asc" },
         selectedGenre: {},
     };
 
     componentDidMount() {
         //组件加载完毕时加载电影和类别列表
         //手动添加genres列表第一项为：All Genres
-        const genres = [{ name: "All Genres" }, ...getGenres()];
+        const genres = [{ name: "All Genres", _id: "" }, ...getGenres()];
         this.setState({ movies: getMovies(), genres });
     }
 
@@ -35,8 +37,6 @@ class Movies extends Component {
     };
 
     handleLike = (movie) => {
-        console.log("click like");
-        console.log(movie)
         const movies = [...this.state.movies];
         const index = movies.indexOf(movie);
         movies[index] = { ...movie };
@@ -49,6 +49,10 @@ class Movies extends Component {
         this.setState({ currentPage: page });
     };
 
+    handleSort = (sortColumn) => {
+        this.setState({ sortColumn });
+    };
+
     render() {
         const { length: count } = this.state.movies;
         const {
@@ -56,6 +60,7 @@ class Movies extends Component {
             pageSize,
             currentPage,
             selectedGenre,
+            sortColumn,
             genres,
         } = this.state;
 
@@ -67,7 +72,14 @@ class Movies extends Component {
                 ? allMovies.filter((m) => m.genre._id === selectedGenre._id)
                 : allMovies;
 
-        const movies = paginate(filtered, currentPage, pageSize);
+        //关键的一步，_.orderBy()方法实现排序
+        const sorted = _.orderBy(
+            filtered,
+            [sortColumn.path],
+            [sortColumn.order]
+        );
+
+        const movies = paginate(sorted, currentPage, pageSize);
 
         return (
             //快速创建：zen coding
@@ -84,8 +96,10 @@ class Movies extends Component {
                     <p>Showing {filtered.length} movies in the database.</p>
                     <MovieTables
                         movies={movies}
+                        sortColumn={sortColumn}
                         onLike={this.handleLike}
                         onDelete={this.handleDelete}
+                        onSort={this.handleSort}
                     />
                     <Pagination
                         itemCount={filtered.length}
