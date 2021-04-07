@@ -1,6 +1,21 @@
 import React, { Component } from "react";
 
 class Counter extends Component {
+    //这个方法在组件被更新后调用
+    //可以用来判断什么时候用ajax
+    componentDidUpdate(prevProps, prevState) {
+        //console.log("prevProps", prevProps);
+        //console.log("prevState", prevState);
+        if (prevProps.counter.value !== this.props.counter.value) {
+            // Ajax call and get new data from the server
+        }
+    }
+
+    //只在一个组件从DOM卸载时调用
+    componentWillUnmount() {
+        console.log("Counter Unmount");
+    }
+
     //controlled component doesn't has its own state, it is controlled by its parent component
     //state includes all the data the component needs
     //其他组件无法访问到state里的值
@@ -37,6 +52,7 @@ class Counter extends Component {
     //     return (
     //         <ul>
     //             {this.state.tags.map((tag) => (
+    //用map来插入多个项，生成标签
     //                 <li key={tag}>{tag}</li>
     //             ))}
     //         </ul>
@@ -44,27 +60,41 @@ class Counter extends Component {
     // }
 
     render() {
-        //利用this.props这个特殊属性，可以在组件间传递信息，props是只读的
+        const { onIncrement, onDelete, counter, onDecrement } = this.props;
+        //利用this.props这个特殊属性，从父组件传递信息进来，props是只读的
         //console.log(this.props)
         return (
             //React.Fragment可以render多个元素，缩写是<>
-            <div>
-                <span className={this.getBadgeClasses()}>
-                    {this.formatCount()}
-                </span>
-                <button
-                    onClick={() => this.props.onIncrement(this.props.counter)}
-                    className="btn btn-secondary btn-sm m-2"
-                >
-                    Increment
-                </button>
-                <button
-                    //子组件发起一个事件，由父组件处理，事件通过this.props传递
-                    onClick={() => this.props.onDelete(this.props.counter.id)}
-                    className="btn btn-danger btn-sm m-2"
-                >
-                    Delete
-                </button>
+            <div className="row">
+                <div className="col-2">
+                    <span className={this.getBadgeClasses()}>
+                        {this.formatCount()}
+                    </span>
+                </div>
+                <div className="col">
+                    <button
+                        onClick={() => onIncrement(counter)}
+                        className="btn btn-secondary btn-sm"
+                        disabled={counter.value === 10 ? "disabled" : ""}
+                    >
+                        +
+                    </button>
+                    <button
+                        onClick={() => onDecrement(counter)}
+                        className="btn btn-secondary btn-sm m-2"
+                        //当counter.value是0时，让减量按钮失效，数值保持为0
+                        disabled={counter.value === 0 ? "disabled" : ""}
+                    >
+                        -
+                    </button>
+                    <button
+                        //子组件发起一个事件，由父组件处理，事件通过this.props传递
+                        onClick={() => onDelete(counter.id)}
+                        className="btn btn-danger btn-sm"
+                    >
+                        Delete
+                    </button>
+                </div>
             </div>
         );
     }
