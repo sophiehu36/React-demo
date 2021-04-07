@@ -1,4 +1,5 @@
-import React, { Component } from "react";
+import React from "react";
+import PropTypes from "prop-types";
 
 //Input: liked: boolean
 //Output: onClick
@@ -12,11 +13,16 @@ const Like = (props) => {
     if (!props.liked) classes += "-o";
     return (
         <i
-            onClick={props.onLikeClick}
+            onClick={props.onLike}
             style={{ cursor: "pointer" }}
             className={classes}
         ></i>
     );
+};
+
+Like.propTypes = {
+    liked: PropTypes.bool.isRequired,
+    onLike: PropTypes.func.isRequired,
 };
 
 export default Like;
