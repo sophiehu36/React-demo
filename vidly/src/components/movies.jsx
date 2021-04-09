@@ -53,18 +53,14 @@ class Movies extends Component {
         this.setState({ sortColumn });
     };
 
-    render() {
-        const { length: count } = this.state.movies;
+    getPagedData = () => {
         const {
             movies: allMovies,
             pageSize,
             currentPage,
             selectedGenre,
             sortColumn,
-            genres,
         } = this.state;
-
-        if (count === 0) return <h1>There are no movies in the database!</h1>;
 
         const filtered =
             //因为没有给all genres设置id属性，所以还要判断id是否同时为true
@@ -81,6 +77,23 @@ class Movies extends Component {
 
         const movies = paginate(sorted, currentPage, pageSize);
 
+        return { totalCount: filtered.length, data: movies };
+    };
+
+    render() {
+        const { length: count } = this.state.movies;
+        const {
+            pageSize,
+            currentPage,
+            selectedGenre,
+            sortColumn,
+            genres,
+        } = this.state;
+
+        if (count === 0) return <h1>There are no movies in the database!</h1>;
+
+        const { totalCount, data: movies } = this.getPagedData();
+
         return (
             //快速创建：zen coding
             //table.table>thead>tr>th*4
@@ -93,7 +106,7 @@ class Movies extends Component {
                     />
                 </div>
                 <div className="col">
-                    <p>Showing {filtered.length} movies in the database.</p>
+                    <p>Showing {totalCount} movies in the database.</p>
                     <MovieTables
                         movies={movies}
                         sortColumn={sortColumn}
@@ -102,7 +115,7 @@ class Movies extends Component {
                         onSort={this.handleSort}
                     />
                     <Pagination
-                        itemCount={filtered.length}
+                        itemCount={totalCount}
                         pageSize={pageSize}
                         currentPage={currentPage}
                         onPageChange={this.handlePageChange}

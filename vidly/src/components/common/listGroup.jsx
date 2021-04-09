@@ -3,14 +3,20 @@ import PropTypes from "prop-types";
 
 //Input: items: array
 //Output: onClick
-const ListGroup = (props) => {
-    const {
-        items,
-        onItemSelect,
-        selectedItem,
-        textProperty,
-        valueProperty,
-    } = props;
+const ListGroup = ({
+    items,
+    onItemSelect,
+    selectedItem,
+    textProperty,
+    valueProperty,
+}) => {
+    // const {
+    //     items,
+    //     onItemSelect,
+    //     selectedItem,
+    //     textProperty,
+    //     valueProperty,
+    // } = props;
     //console.log(items);
     return (
         <div className="list-group">

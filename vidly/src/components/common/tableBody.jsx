@@ -7,7 +7,6 @@ import _ from "lodash";
 class TableBody extends Component {
     renderCell = (item, column) => {
         if (column.content) return column.content(item);
-
         return _.get(item, column.path);
     };
 
