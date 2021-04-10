@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import MovieTables from "./movieTables";
 import Pagination from "./common/pagination";
 import ListGroup from "./common/listGroup";
+import SearchBox from "./common/search";
 import { getMovies } from "../services/fakeMovieService";
 import { getGenres } from "../services/fakeGenreService";
 import { paginate } from "../utils/paginate";
@@ -16,6 +17,7 @@ class Movies extends Component {
         currentPage: 1,
         sortColumn: { path: "title", order: "asc" },
         selectedGenre: {},
+        searchQuery: "",
     };
 
     componentDidMount() {
@@ -24,12 +26,6 @@ class Movies extends Component {
         const genres = [{ name: "All Genres", _id: "" }, ...getGenres()];
         this.setState({ movies: getMovies(), genres });
     }
-
-    handleGenreSelect = (genre) => {
-        //为了避免切换选择genre时，页面没有切换过来
-        //切换genre的同时，把页面切换到第一页
-        this.setState({ selectedGenre: genre, currentPage: 1 });
-    };
 
     handleDelete = (movie) => {
         //用一个新变量保存movies，去掉点击的这个movie
@@ -50,24 +46,61 @@ class Movies extends Component {
         this.setState({ currentPage: page });
     };
 
+    handleGenreSelect = (genre) => {
+        //为了避免切换选择genre时，页面没有切换过来
+        //切换genre的同时，把页面切换到第一页
+        this.setState({
+            selectedGenre: genre,
+            searchQuery: "",
+            currentPage: 1,
+        });
+        // this.setState({ movies: getMovies(), searchQuery: "" });
+    };
+
+    handleSearch = (query) => {
+        // this.setState({ selectedGenre: {} });
+        // //console.log(input.value.toUpperCase())
+        // const searchQuery = input.value.toUpperCase();
+        // const movies = [...this.state.movies].filter((m) =>
+        //     m.title.toUpperCase().includes(searchQuery)
+        // );
+        // console.log(movies);
+        // this.setState({ movies, searchQuery });
+        this.setState({
+            searchQuery: query,
+            selectedGenre: null,
+            currentPage: 1,
+        });
+    };
+
     handleSort = (sortColumn) => {
         this.setState({ sortColumn });
     };
 
     getPagedData = () => {
         const {
-            movies: allMovies,
             pageSize,
             currentPage,
             selectedGenre,
+            searchQuery,
             sortColumn,
+            movies: allMovies,
         } = this.state;
 
-        const filtered =
-            //因为没有给all genres设置id属性，所以还要判断id是否同时为true
-            selectedGenre && selectedGenre._id
-                ? allMovies.filter((m) => m.genre._id === selectedGenre._id)
-                : allMovies;
+        //设置筛选初始值为原movie数据
+        let filtered = allMovies;
+
+        //判断是否有搜索值，如果有的话，返回筛选后的值
+        if (searchQuery)
+            filtered = allMovies.filter((m) =>
+                //如果没有匹配的项，就会返回一个空数组
+                m.title.toUpperCase().includes(searchQuery.toUpperCase())
+            );
+        //因为没有给all genres设置id属性，所以还要判断id是否同时为true
+        else if (selectedGenre && selectedGenre._id)
+            filtered = allMovies.filter(
+                (m) => m.genre._id === selectedGenre._id
+            );
 
         //关键的一步，_.orderBy()方法实现排序
         const sorted = _.orderBy(
@@ -76,6 +109,7 @@ class Movies extends Component {
             [sortColumn.order]
         );
 
+        //对筛选后的项分页显示
         const movies = paginate(sorted, currentPage, pageSize);
 
         return { totalCount: filtered.length, data: movies };
@@ -89,6 +123,7 @@ class Movies extends Component {
             selectedGenre,
             sortColumn,
             genres,
+            searchQuery,
         } = this.state;
 
         if (count === 0) return <h1>There are no movies in the database!</h1>;
@@ -111,6 +146,10 @@ class Movies extends Component {
                         New Movie
                     </Link>
                     <p>Showing {totalCount} movies in the database.</p>
+                    <SearchBox
+                        onChange={this.handleSearch}
+                        value={searchQuery}
+                    />
                     <MovieTables
                         movies={movies}
                         sortColumn={sortColumn}

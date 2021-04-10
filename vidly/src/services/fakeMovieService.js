@@ -91,6 +91,7 @@ export function saveMovie(movie) {
     movieInDb.numberInStock = movie.numberInStock;
     movieInDb.dailyRentalRate = movie.dailyRentalRate;
 
+    //新建的movie没有id，需要设置一个
     if (!movieInDb._id) {
         //id是一个string，所以要用toString()转换数据类型
         movieInDb._id = Date.now().toString();

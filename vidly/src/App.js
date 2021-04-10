@@ -8,7 +8,7 @@ import NotFound from "./components/notFound";
 import NavBar from "./components/navbar";
 import LoginForm from "./components/login";
 import RegisterForm from "./components/registerForm";
-// import NewMovieForm from "./components/newMovieForm";
+
 import "./App.css";
 
 class App extends Component {
