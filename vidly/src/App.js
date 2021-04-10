@@ -15,18 +15,22 @@ class App extends Component {
     render() {
         return (
             <div>
-                {/* <LoginForm /> */}
-                {/* <RegisterForm /> */}
-                {/* <NewMovieForm /> */}
                 <NavBar />
                 <div className="container">
                     <Switch>
                         <Route path="/login" component={LoginForm}></Route>
                         <Route
-                            path="/registerForm"
+                            path="/register"
                             component={RegisterForm}
                         ></Route>
-                        <Route path="/movies/:id" component={MovieForm}></Route>
+                        <Route
+                            path="/movies/:id"
+                            component={MovieForm}
+                        ></Route>
+                        <Route
+                            path="/movies/new"
+                            component={MovieForm}
+                        ></Route>
                         <Route path="/movies" component={Movies}></Route>
                         <Route path="/customers" component={Customers}></Route>
                         <Route path="/rentals" component={Rentals}></Route>

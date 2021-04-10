@@ -2,7 +2,7 @@ import React from "react";
 
 const Input = ({ name, label, error, ...rest }) => {
     return (
-        <div className="mb-3">
+        <div className="form-group mb-3">
             <label htmlFor={name} className="form-label">
                 {label}
             </label>

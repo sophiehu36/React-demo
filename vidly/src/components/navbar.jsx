@@ -38,7 +38,7 @@ const NavBar = () => {
                         </NavLink>
                         <NavLink
                             className="nav-item nav-link"
-                            to="/registerForm"
+                            to="/register"
                         >
                             Register
                         </NavLink>
