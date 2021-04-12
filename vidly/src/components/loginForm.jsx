@@ -1,7 +1,7 @@
 import React from "react";
 import Joi from "joi-browser";
 import Form from "./common/form";
-import { login } from "../services/authService";
+import auth from "../services/authService";
 
 class LoginForm extends Form {
     //设置一个reference，用来获取某个标签的value
@@ -27,8 +27,8 @@ class LoginForm extends Form {
     doSubmit = async () => {
         try {
             console.log("Submitted");
-            const { data } = await login(this.state.data);
-            localStorage.token = data;
+            await auth.login(this.state.data);
+
             window.location = "/";
         } catch (ex) {
             if (ex.response && ex.response && ex.response.status === 400) {
