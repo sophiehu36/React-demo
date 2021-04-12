@@ -1,12 +1,13 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import MovieTables from "./movieTables";
 import Pagination from "./common/pagination";
 import ListGroup from "./common/listGroup";
 import SearchBox from "./common/search";
-import { getMovies } from "../services/fakeMovieService";
-import { getGenres } from "../services/fakeGenreService";
+import { getMovies, deleteMovies } from "../services/movieService";
+import { getGenres } from "../services/genreService";
 import { paginate } from "../utils/paginate";
-import { Link } from "react-router-dom";
 import _ from "lodash";
 
 class Movies extends Component {
@@ -20,17 +21,38 @@ class Movies extends Component {
         searchQuery: "",
     };
 
-    componentDidMount() {
+    async componentDidMount() {
         //组件加载完毕时加载电影和类别列表
         //手动添加genres列表第一项为：All Genres
-        const genres = [{ name: "All Genres", _id: "" }, ...getGenres()];
-        this.setState({ movies: getMovies(), genres });
+        const { data } = await getGenres();
+        const genres = [{ name: "All Genres", _id: "" }, ...data];
+        const { data: movies } = await getMovies();
+
+        this.setState({ movies, genres });
     }
 
-    handleDelete = (movie) => {
+    handleDelete = async (movie) => {
+        const originalMovies = this.state.movies;
         //用一个新变量保存movies，去掉点击的这个movie
-        const newMovies = this.state.movies.filter((m) => m._id !== movie._id);
+        const newMovies = originalMovies.filter((m) => m._id !== movie._id);
         this.setState({ movies: newMovies });
+        // console.log(movie);
+        try {
+            await deleteMovies(movie._id);
+            //模拟错误：throw new Error("error");
+        } catch (ex) {
+            // console.log('catch error')
+            // expected error has : ex.request  & ex.response
+            // Expected (404: not found, 400: bad request) - CLIENT ERRORS
+            // - Display a specific error message to the user
+            if (ex.response && ex.response.status === 404)
+                toast.error("This movie has alreay been deleted.");
+            // Unexpected (network down, server down, database down, bug)
+            //- Log the error
+            //- Display a generic and friendly error message
+            //通过axios拦截器打印error message
+            this.setState({ movies: originalMovies });
+        }
     };
 
     handleLike = (movie) => {

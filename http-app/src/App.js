@@ -1,8 +1,9 @@
 import React, { Component } from "react";
-import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import http from "./services/httpService";
+import config from "./config.json";
 import "./App.css";
-
-const apiEndpoint = "https://jsonplaceholder.typicode.com/posts";
+import "react-toastify/dist/ReactToastify.css";
 
 class App extends Component {
     state = {
@@ -10,8 +11,8 @@ class App extends Component {
     };
 
     async componentDidMount() {
-        //pending > resolved(success) OR rejected(failure)
-        const { data: posts } = await axios.get(apiEndpoint);
+        //pending --> resolved(success) OR rejected(failure)
+        const { data: posts } = await http.get(config.apiEndpoint);
         this.setState({ posts });
     }
 
@@ -19,7 +20,7 @@ class App extends Component {
         // console.log("Add");
         const obj = { title: "a", body: "b" };
         //post发送数据，第一个参数是url，第二个参数是要发送的数据
-        const { data: post } = await axios.post(apiEndpoint, obj);
+        const { data: post } = await http.post(config.apiEndpoint, obj);
         // console.log(post)
         const posts = [post, ...this.state.posts];
         this.setState({ posts });
@@ -27,14 +28,14 @@ class App extends Component {
 
     handleUpdate = async (post) => {
         post.title = "Updated";
-        //put方法更新所有post，第一个参数是url+id，第二个参数是所有post
-        await axios.put(`${apiEndpoint}/${post.id}`, post);
-        //patch方法更新一个或多个post，第一个参数是url+id，第二个参数是自定义对象
-        // axios.patch(`${apiEndpoint}/${post.id}`, { title: post.title });
         const posts = [...this.state.posts];
         const index = posts.indexOf(post);
         posts[index] = { ...post };
         this.setState({ posts });
+        //put方法更新所有post，第一个参数是url+id，第二个参数是所有post
+        await http.put(`${config.apiEndpoint}/${post.id}`, post);
+        //patch方法更新一个或多个post，第一个参数是url+id，第二个参数是自定义对象
+        // axios.patch(`${config.apiEndpoint}/${post.id}`, { title: post.title });
     };
 
     handleDelete = async (post) => {
@@ -42,23 +43,21 @@ class App extends Component {
         const posts = this.state.posts.filter((p) => p.id !== post.id);
         this.setState({ posts });
         //在服务器回应之前页面先显示
+        //在出现出错误需要操作时使用try catch
         try {
-            await axios.delete(`${apiEndpoint}/${post.id}`);
+            await http.delete(`${config.apiEndpoint}/${post.id}`);
             //模拟错误：throw new Error("error");
         } catch (ex) {
+            // console.log('catch error')
             // expected error has : ex.request  & ex.response
             // Expected (404: not found, 400: bad request) - CLIENT ERRORS
             // - Display a specific error message to the user
             if (ex.response && ex.response.status === 404)
-                alert("This post has alreay been deleted.");
-            else {
-                // Unexpected (network down, server down, database down, bug)
-                //- Log the error
-                //- Display a generic and friendly error message
-                console.log("Logging the error", ex);
-                alert("An unexpected error occurred.");
-            }
-
+                toast.error("This post has alreay been deleted.");
+            // Unexpected (network down, server down, database down, bug)
+            //- Log the error
+            //- Display a generic and friendly error message
+            //通过axios拦截器打印error message
             this.setState({ posts: originalPosts });
         }
     };
@@ -66,6 +65,7 @@ class App extends Component {
     render() {
         return (
             <React.Fragment>
+                <ToastContainer />
                 <button className="btn btn-primary" onClick={this.handleAdd}>
                     Add
                 </button>
